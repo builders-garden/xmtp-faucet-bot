@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const EVM_TOKENS = ["ETH", "MATIC", "USDC"];
 
 export interface Network {
@@ -13,7 +15,6 @@ export interface Network {
   isActive: boolean;
   balance: string;
 }
-
 export interface DripTokensResponse {
   ok: boolean;
   error?: string;
@@ -31,8 +32,8 @@ export class LearnWeb3Client {
   }
 
   async getNetworks(onlyEvm = true): Promise<Network[]> {
-    const response = await fetch(`${this.BASE_URL}/networks`);
-    const data: Network[] = await response.json();
+    const response = await axios(`${this.BASE_URL}/networks`);
+    const data: Network[] = response.data;
     if (onlyEvm) {
       return data.filter((network) =>
         EVM_TOKENS.some((t) =>
@@ -40,20 +41,22 @@ export class LearnWeb3Client {
         )
       );
     }
-    return response.json();
+    return data;
   }
 
   async dripTokens(
     networkId: string,
     recipientAddress: string
   ): Promise<DripTokensResponse> {
-    const response = await fetch(`${this.BASE_URL}/drip`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({ networkId, recipientAddress }),
-    });
-    return await response.json();
+    const response = await axios.post(
+      `${this.BASE_URL}/drip`,
+      { networkId, recipientAddress },
+      {
+        headers: {
+          authorization: `Bearer ${this.apiKey}`,
+        },
+      }
+    );
+    return response.data;
   }
 }

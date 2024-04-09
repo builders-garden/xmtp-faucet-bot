@@ -48,7 +48,7 @@ run(async (context: HandlerContext) => {
   } else if (step === 1) {
     if (!SUPPORTED_NETWORKS.includes(content)) {
       await context.reply(
-        `‼️ I'm sorry, but I don't support ${content} at the moment. Can I assist you with a different testnet?`
+        `❌ I'm sorry, but I don't support ${content} at the moment. Can I assist you with a different testnet?`
       );
       return;
     }
@@ -75,7 +75,7 @@ run(async (context: HandlerContext) => {
     const result = await learnWeb3Client.dripTokens(content, wallet.address);
     if (!result.ok) {
       await context.reply(
-        `‼️ Sorry, there was an error processing your request:\n\n"${result.error!}"`
+        `❌ Sorry, there was an error processing your request:\n\n"${result.error!}"`
       );
       return;
     }
