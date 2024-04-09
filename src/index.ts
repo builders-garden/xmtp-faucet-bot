@@ -4,7 +4,7 @@ import HandlerContext from "./handler-context";
 import run from "./runner.js";
 import { getRedisClient } from "./lib/redis.js";
 import { LearnWeb3Client } from "./lib/learn-web3.js";
-import { CLAIM_EVERY, SUPPORTED_NETWORKS } from "./lib/constants.js";
+import { CLAIM_EVERY, ONE_DAY, SUPPORTED_NETWORKS } from "./lib/constants.js";
 
 const inMemoryCache = new Map<string, number>();
 
@@ -20,6 +20,33 @@ run(async (context: HandlerContext) => {
   }
 
   const redisClient = await getRedisClient();
+
+  const cachedSupportedNetworksData = await redisClient.get(
+    "supported-networks"
+  );
+  let supportedNetworks: string[];
+  const learnWeb3Client = new LearnWeb3Client();
+  if (
+    !cachedSupportedNetworksData ||
+    parseInt(JSON.parse(cachedSupportedNetworksData!)?.lastSyncedAt) >
+      Date.now() + ONE_DAY
+  ) {
+    const updatedSupportedNetworksData = (
+      await learnWeb3Client.getNetworks()
+    ).map((n) => n.networkId);
+    await redisClient.set(
+      "supported-networks",
+      JSON.stringify({
+        lastSyncedAt: Date.now(),
+        supportedNetworks: updatedSupportedNetworksData,
+      })
+    );
+    supportedNetworks = updatedSupportedNetworksData;
+  } else {
+    supportedNetworks = JSON.parse(
+      cachedSupportedNetworksData!
+    ).supportedNetworks;
+  }
 
   // get the current step we're in
   const step = inMemoryCache.get(senderAddress);
@@ -71,7 +98,6 @@ run(async (context: HandlerContext) => {
     await context.reply(
       "Your testnet tokens are being processed. Please wait a moment for the transaction to process."
     );
-    const learnWeb3Client = new LearnWeb3Client();
     const result = await learnWeb3Client.dripTokens(content, wallet.address);
     if (!result.ok) {
       await context.reply(
