@@ -51,15 +51,6 @@ run(async (context: HandlerContext) => {
   // get the current step we're in
   const step = inMemoryCache.get(senderAddress);
 
-  // check if the message is an unsubscribe message
-  if (
-    content?.toLowerCase() === "stop" ||
-    content?.toLowerCase() === "unsubscribe"
-  ) {
-    // unsubscribe the user
-    await redisClient.del(senderAddress);
-  }
-
   if (!step) {
     // send the first message
     await context.reply("Hey! I can assist you in obtaining testnet tokens.");
