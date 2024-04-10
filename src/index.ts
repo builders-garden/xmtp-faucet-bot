@@ -67,7 +67,7 @@ run(async (context: HandlerContext) => {
 
     inMemoryCache.set(senderAddress, 1);
   } else if (step === 1) {
-    if (!SUPPORTED_NETWORKS.includes(content)) {
+    if (!supportedNetworks.includes(content.toLowerCase())) {
       await context.reply(
         `❌ I'm sorry, but I don't support ${content} at the moment. Can I assist you with a different testnet?`
       );
@@ -92,7 +92,10 @@ run(async (context: HandlerContext) => {
     await context.reply(
       "Your testnet tokens are being processed. Please wait a moment for the transaction to process."
     );
-    const result = await learnWeb3Client.dripTokens(content, senderAddress);
+    const result = await learnWeb3Client.dripTokens(
+      content.toLowerCase(),
+      senderAddress
+    );
     if (!result.ok) {
       await context.reply(
         `❌ Sorry, there was an error processing your request:\n\n"${result.error!}"`
