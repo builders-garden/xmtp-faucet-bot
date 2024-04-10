@@ -92,7 +92,7 @@ run(async (context: HandlerContext) => {
     await context.reply(
       "Your testnet tokens are being processed. Please wait a moment for the transaction to process."
     );
-    const result = await learnWeb3Client.dripTokens(content, wallet.address);
+    const result = await learnWeb3Client.dripTokens(content, senderAddress);
     if (!result.ok) {
       await context.reply(
         `❌ Sorry, there was an error processing your request:\n\n"${result.error!}"`
