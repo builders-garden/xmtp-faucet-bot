@@ -25,6 +25,10 @@ run(async (context: HandlerContext) => {
     return;
   }
 
+  if (content === "reset") {
+    inMemoryCache.set(senderAddress, 0);
+  }
+
   const redisClient = await getRedisClient();
 
   const cachedSupportedNetworksData = await redisClient.get(
@@ -108,5 +112,6 @@ run(async (context: HandlerContext) => {
     await context.reply(
       `${FRAME_BASE_URL}?networkId=${content}&txLink=${result.value}`
     );
+    inMemoryCache.set(senderAddress, 0);
   }
 });
