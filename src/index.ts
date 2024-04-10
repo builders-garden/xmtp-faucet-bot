@@ -67,7 +67,7 @@ run(async (context: HandlerContext) => {
 
     inMemoryCache.set(senderAddress, 1);
   } else if (step === 1) {
-    const inputNetwork = content.toLowerCase().replace(" ", "_");
+    const inputNetwork = content.trim().toLowerCase().replace(" ", "_");
     if (!supportedNetworks.includes(inputNetwork)) {
       await context.reply(
         `❌ I'm sorry, but I don't support ${content} at the moment. Can I assist you with a different testnet?`
