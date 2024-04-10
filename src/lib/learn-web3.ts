@@ -41,7 +41,7 @@ export class LearnWeb3Client {
         )
       );
     }
-    return data;
+    return data.filter((network) => network.isActive);
   }
 
   async dripTokens(
