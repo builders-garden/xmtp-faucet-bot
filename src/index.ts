@@ -3,8 +3,13 @@ import { privateKeyToAccount } from "viem/accounts";
 import HandlerContext from "./handler-context";
 import run from "./runner.js";
 import { getRedisClient } from "./lib/redis.js";
-import { LearnWeb3Client } from "./lib/learn-web3.js";
-import { CLAIM_EVERY, ONE_DAY, SUPPORTED_NETWORKS } from "./lib/constants.js";
+import { LearnWeb3Client, Network } from "./lib/learn-web3.js";
+import {
+  CLAIM_EVERY,
+  FRAME_BASE_URL,
+  ONE_DAY,
+  SUPPORTED_NETWORKS,
+} from "./lib/constants.js";
 
 const inMemoryCache = new Map<string, number>();
 
@@ -31,9 +36,7 @@ run(async (context: HandlerContext) => {
     parseInt(JSON.parse(cachedSupportedNetworksData!)?.lastSyncedAt) >
       Date.now() + ONE_DAY
   ) {
-    const updatedSupportedNetworksData = (
-      await learnWeb3Client.getNetworks()
-    ).map((n) => n.networkId);
+    const updatedSupportedNetworksData = await learnWeb3Client.getNetworks();
     await redisClient.set(
       "supported-networks",
       JSON.stringify({
@@ -41,11 +44,11 @@ run(async (context: HandlerContext) => {
         supportedNetworks: updatedSupportedNetworksData,
       })
     );
-    supportedNetworks = updatedSupportedNetworksData;
+    supportedNetworks = updatedSupportedNetworksData.map((n) => n.networkId);
   } else {
     supportedNetworks = JSON.parse(
       cachedSupportedNetworksData!
-    ).supportedNetworks;
+    ).supportedNetworks?.map((n: Network) => n.networkId);
   }
 
   // get the current step we're in
@@ -97,6 +100,8 @@ run(async (context: HandlerContext) => {
       return;
     }
     await context.reply("Here's your transaction receipt:");
-    await context.reply(result.value);
+    await context.reply(
+      `${FRAME_BASE_URL}?networkId=${content}&txLink=${result.value}`
+    );
   }
 });

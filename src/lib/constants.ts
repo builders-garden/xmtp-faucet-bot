@@ -28,3 +28,5 @@ export const SUPPORTED_NETWORKS = [
 export const CLAIM_EVERY = 24 * 60 * 60 * 1000; // 24 hours
 
 export const ONE_DAY = 24 * 60 * 60 * 1000; // 24 hours
+
+export const FRAME_BASE_URL = "https://faucet-frame.builders.garden";
