@@ -4,13 +4,7 @@ import HandlerContext from "./handler-context";
 import run from "./runner.js";
 import { getRedisClient } from "./lib/redis.js";
 import { LearnWeb3Client, Network } from "./lib/learn-web3.js";
-import {
-  CLAIM_EVERY,
-  FIVE_MINUTES,
-  FRAME_BASE_URL,
-  ONE_DAY,
-  SUPPORTED_NETWORKS,
-} from "./lib/constants.js";
+import { CLAIM_EVERY, FIVE_MINUTES, FRAME_BASE_URL } from "./lib/constants.js";
 
 const inMemoryCache = new Map<string, number>();
 
@@ -34,7 +28,7 @@ run(async (context: HandlerContext) => {
   const cachedSupportedNetworksData = await redisClient.get(
     "supported-networks"
   );
-  let supportedNetworks: string[];
+  let supportedNetworks: { id: string; balance: string }[];
   const learnWeb3Client = new LearnWeb3Client();
   if (
     !cachedSupportedNetworksData ||
@@ -49,11 +43,17 @@ run(async (context: HandlerContext) => {
         supportedNetworks: updatedSupportedNetworksData,
       })
     );
-    supportedNetworks = updatedSupportedNetworksData.map((n) => n.networkId);
+    supportedNetworks = updatedSupportedNetworksData.map((n: Network) => ({
+      id: n.networkId,
+      balance: n.balance,
+    }));
   } else {
     supportedNetworks = JSON.parse(
       cachedSupportedNetworksData!
-    ).supportedNetworks?.map((n: Network) => n.networkId);
+    ).supportedNetworks?.map((n: Network) => ({
+      id: n.networkId,
+      balance: n.balance,
+    }));
   }
 
   // get the current step we're in
@@ -65,15 +65,15 @@ run(async (context: HandlerContext) => {
 
     // send the second message
     await context.reply(
-      `Here the options you can choose from (make sure to copy and paste the name exactly!):\n${SUPPORTED_NETWORKS.map(
-        (n) => `- ${n}`
-      ).join("\n")}`
+      `Here the options you can choose from (make sure to copy and paste the name exactly!):\n${supportedNetworks
+        .map((n) => `- ${n.id} | Balance: ${n.balance}`)
+        .join("\n")}`
     );
 
     inMemoryCache.set(senderAddress, 1);
   } else if (step === 1) {
     const inputNetwork = content.trim().toLowerCase().replace(" ", "_");
-    if (!supportedNetworks.includes(inputNetwork)) {
+    if (!supportedNetworks.map((n) => n.id).includes(inputNetwork)) {
       await context.reply(
         `❌ I'm sorry, but I don't support ${content} at the moment. Can I assist you with a different testnet?`
       );

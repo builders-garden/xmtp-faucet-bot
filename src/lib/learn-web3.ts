@@ -35,10 +35,11 @@ export class LearnWeb3Client {
     const response = await axios(`${this.BASE_URL}/networks`);
     const data: Network[] = response.data;
     if (onlyEvm) {
-      return data.filter((network) =>
-        EVM_TOKENS.some((t) =>
-          network.tokenName.toLowerCase().includes(t.toLowerCase())
-        )
+      return data.filter(
+        (network) =>
+          EVM_TOKENS.some((t) =>
+            network.tokenName.toLowerCase().includes(t.toLowerCase())
+          ) && network.isActive
       );
     }
     return data.filter((network) => network.isActive);
