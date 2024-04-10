@@ -6,6 +6,7 @@ import { getRedisClient } from "./lib/redis.js";
 import { LearnWeb3Client, Network } from "./lib/learn-web3.js";
 import {
   CLAIM_EVERY,
+  FIVE_MINUTES,
   FRAME_BASE_URL,
   ONE_DAY,
   SUPPORTED_NETWORKS,
@@ -34,7 +35,7 @@ run(async (context: HandlerContext) => {
   if (
     !cachedSupportedNetworksData ||
     parseInt(JSON.parse(cachedSupportedNetworksData!)?.lastSyncedAt) >
-      Date.now() + ONE_DAY
+      Date.now() + FIVE_MINUTES
   ) {
     const updatedSupportedNetworksData = await learnWeb3Client.getNetworks();
     await redisClient.set(
