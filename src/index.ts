@@ -63,11 +63,18 @@ run(async (context: HandlerContext) => {
     // send the first message
     await context.reply("Hey! I can assist you in obtaining testnet tokens.");
 
+    const channelsWithBalance = supportedNetworks
+      .filter((n) => parseFloat(n.balance) > 0)
+      .map((n) => `- ${n.id}`);
+    const channelsWithoutBalance = supportedNetworks
+      .filter((n) => parseFloat(n.balance) === 0)
+      .map((n) => `- ${n.id}`);
+
     // send the second message
     await context.reply(
-      `Here the options you can choose from (make sure to copy and paste the name exactly!):\n${supportedNetworks
-        .map((n) => `- ${n.id} | Balance: ${n.balance}`)
-        .join("\n")}`
+      `Here the options you can choose from (make sure to copy and paste the name exactly!):\n\n✅With Balance:\n${channelsWithBalance.join(
+        "\n"
+      )}\n\n❌Without Balance:\n${channelsWithoutBalance.join("\n")}`
     );
 
     inMemoryCache.set(senderAddress, 1);
