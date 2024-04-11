@@ -106,9 +106,12 @@ run(async (context: HandlerContext) => {
 
     if (lastClaims) {
       const [lastClaimedAt, claimCount] = lastClaims?.split("-");
+      // value in hours
+      const claimWindow = Number(process.env.CLAIM_WINDOW as string);
+      // value in ms
+      const claimWindowMs = claimWindow * 60 * 60 * 1000;
       if (
-        Number(lastClaimedAt) <
-          Date.now() - Number(process.env.CLAIM_WINDOW as string) &&
+        Number(lastClaimedAt) < Date.now() - claimWindowMs &&
         Number(claimCount) >= Number(process.env.MAX_CLAIM_COUNT as string)
       ) {
         const nextClaimAt =
