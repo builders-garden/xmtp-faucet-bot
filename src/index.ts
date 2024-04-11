@@ -7,11 +7,9 @@ import { LearnWeb3Client, Network } from "./lib/learn-web3.js";
 import { FIVE_MINUTES, FRAME_BASE_URL } from "./lib/constants.js";
 
 const inMemoryCache = new Map<string, number>();
-const testnetMemoryCache = new Map<string, string>();
 
 const resetMemoryCache = (address: string) => {
   inMemoryCache.set(address, 0);
-  testnetMemoryCache.delete(address);
 };
 
 run(async (context: HandlerContext) => {
