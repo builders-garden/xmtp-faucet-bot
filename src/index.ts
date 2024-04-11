@@ -146,10 +146,22 @@ run(async (context: HandlerContext) => {
       if (lastClaims) {
         // increment the claim count
         const [lastClaimedAt, claimCount] = lastClaims.split("-");
-        await redisClient.set(
-          `last-claims-${senderAddress}`,
-          `${lastClaimedAt}-${Number(claimCount) + 1}`
-        );
+        // value in hours
+        const claimWindow = Number(process.env.CLAIM_WINDOW as string);
+        // value in ms
+        const claimWindowMs = claimWindow * 60 * 60 * 1000;
+        // if the last claim was more than the claim window, reset the count
+        if (Number(lastClaimedAt) < Date.now() - claimWindowMs) {
+          await redisClient.set(
+            `last-claims-${senderAddress}`,
+            `${Date.now()}-1`
+          );
+        } else {
+          await redisClient.set(
+            `last-claims-${senderAddress}`,
+            `${lastClaimedAt}-${Number(claimCount) + 1}`
+          );
+        }
       } else {
         await redisClient.set(
           `last-claims-${senderAddress}`,
