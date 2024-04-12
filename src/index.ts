@@ -4,7 +4,7 @@ import HandlerContext from "./handler-context";
 import run from "./runner.js";
 import { getRedisClient } from "./lib/redis.js";
 import { LearnWeb3Client, Network } from "./lib/learn-web3.js";
-import { CLAIM_EVERY, FIVE_MINUTES, FRAME_BASE_URL } from "./lib/constants.js";
+import { CLAIM_EVERY, FIVE_MINUTES } from "./lib/constants.js";
 
 const inMemoryCache = new Map<string, number>();
 
@@ -117,7 +117,7 @@ run(async (context: HandlerContext) => {
     }
     await context.reply("Here's your transaction receipt:");
     await context.reply(
-      `${FRAME_BASE_URL}?networkId=${inputNetwork}&txLink=${result.value}`
+      `${process.env.FRAME_BASE_URL}?networkId=${inputNetwork}&txLink=${result.value}`
     );
     inMemoryCache.set(senderAddress, 0);
   }
