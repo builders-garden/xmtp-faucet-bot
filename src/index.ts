@@ -117,7 +117,7 @@ run(async (context: HandlerContext) => {
     }
     await context.reply("Here's your transaction receipt:");
     await context.reply(
-      `${FRAME_BASE_URL}?networkId=${content}&txLink=${result.value}`
+      `${FRAME_BASE_URL}?networkId=${inputNetwork}&txLink=${result.value}`
     );
     inMemoryCache.set(senderAddress, 0);
   }
