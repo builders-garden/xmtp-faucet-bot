@@ -19,7 +19,7 @@ run(async (context: HandlerContext) => {
     return;
   }
 
-  if (content === "reset") {
+  if (content.toLowerCase() === "reset") {
     inMemoryCache.set(senderAddress, 0);
   }
 
