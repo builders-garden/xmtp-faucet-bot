@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { privateKeyToAccount } from "viem/accounts";
 import HandlerContext from "./handler-context";
 import run from "./runner.js";
 import { getRedisClient } from "./lib/redis.js";
@@ -10,16 +9,9 @@ const inMemoryCache = new Map<string, number>();
 
 run(async (context: HandlerContext) => {
   const { message } = context;
-  const wallet = privateKeyToAccount(process.env.KEY as `0x${string}`);
-
   const { content, senderAddress } = message;
 
-  if (senderAddress?.toLowerCase() === wallet.address?.toLowerCase()) {
-    // safely ignore this message
-    return;
-  }
-
-  if (content.toLowerCase() === "reset") {
+  if (content.toLowerCase() === "stop") {
     inMemoryCache.set(senderAddress, 0);
   }
 
