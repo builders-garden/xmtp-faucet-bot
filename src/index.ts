@@ -46,8 +46,14 @@ run(async (context: HandlerContext) => {
       id: n.networkId,
       balance: n.balance,
     }));
+    console.log(supportedNetworks);
   }
-
+  supportedNetworks = supportedNetworks.filter(
+    (n) =>
+      !n.id.toLowerCase().includes("starknet") &&
+      !n.id.toLowerCase().includes("fuel") &&
+      !n.id.toLowerCase().includes("mode")
+  );
   // get the current step we're in
   const step = inMemoryCache.get(senderAddress);
 
@@ -71,7 +77,7 @@ run(async (context: HandlerContext) => {
 
     inMemoryCache.set(senderAddress, 1);
   } else if (step === 1) {
-    const inputNetwork = content.trim().toLowerCase().replace(" ", "_");
+    const inputNetwork = content.trim().toLowerCase().replaceAll(" ", "_");
     if (!supportedNetworks.map((n) => n.id).includes(inputNetwork)) {
       await context.reply(
         `❌ I'm sorry, but I don't support ${content} at the moment. Can I assist you with a different testnet?`
