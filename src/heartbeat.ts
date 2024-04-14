@@ -1,4 +1,4 @@
-/* This file is a utility for the heartbeat mechanism. 
+/* New: This file is a utility for the heartbeat mechanism. 
 It is used to send a heartbeat message to the bot every minute.
 If the bot does not receive a heartbeat message for more than 2 minutes, it will restart the process. */
 
@@ -56,7 +56,6 @@ export const checkHeartbeat = async () => {
 export const sendHeartbeat = async (key: string) => {
   try {
     let wallet = new Wallet(key);
-    console.log(key, wallet.address);
     const client = await Client.create(wallet, {
       env: process.env.XMTP_ENV as any,
     });
