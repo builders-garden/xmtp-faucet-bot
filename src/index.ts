@@ -64,7 +64,7 @@ run(async (context: HandlerContext) => {
 
     // send the second message
     await context.reply(
-      `Here the options you can choose from (make sure to copy and paste the name exactly!):\n\n✅With Balance:\n${channelsWithBalance.join(
+      `Here the options you can choose from (make sure to type them exactly!):\n\nSend "stop" at any time to show the list again.\n\n✅With Balance:\n${channelsWithBalance.join(
         "\n"
       )}\n\n❌Without Balance:\n${channelsWithoutBalance.join("\n")}`
     );
