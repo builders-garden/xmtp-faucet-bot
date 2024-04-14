@@ -6,15 +6,9 @@ This is a PoC for an XMTP bot sending Faucet testnet funds through XMTP. Powered
 
 ## How does it work
 
-The XMTP Faucet Bot streamlines the distribution of testnet tokens via XMTP messages, leveraging the LearnWeb3 API for operations:
+3. **List display**: Send "list" for seeing the full list
 
-1. **Initialization**: Initiates connections to XMTP and Redis, and sets up an in-memory cache for tracking interactions.
-
-2. **Message Handling**: Listens for and evaluates incoming XMTP messages.
-
-3. **Opt-Out**: Users sending "stop" are flagged in the cache to cease token distributions.
-
-4. **Network Checks**: Validates supported networks and their balances through Redis, refreshing data from the LearnWeb3 API as necessary.
+4. **Network Checks**: Validates supported networks and their balances through the Learnweb3API
 
 5. **Rate limit**: Every testnet is liited to once per day per address.
 
