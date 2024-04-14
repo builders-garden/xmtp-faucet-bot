@@ -11,7 +11,7 @@ run(async (context: HandlerContext) => {
   const { message } = context;
   const { content, senderAddress } = message;
 
-  if (content.toLowerCase() === "stop") {
+  if (content.toLowerCase() === "list") {
     inMemoryCache.set(senderAddress, 0);
   }
 
@@ -64,7 +64,7 @@ run(async (context: HandlerContext) => {
 
     // send the second message
     await context.reply(
-      `Here the options you can choose from (make sure to type them exactly!):\n\nSend "stop" at any time to show the list again.\n\n✅With Balance:\n${channelsWithBalance.join(
+      `Here the options you can choose from (make sure to type them exactly!):\n\nSend "list" at any time to show the list again.\n\n✅With Balance:\n${channelsWithBalance.join(
         "\n"
       )}\n\n❌Without Balance:\n${channelsWithoutBalance.join("\n")}`
     );
