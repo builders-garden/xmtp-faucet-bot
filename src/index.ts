@@ -1,6 +1,6 @@
 import "dotenv/config";
-import HandlerContext from "./handler-context";
-import run from "./runner.js";
+import HandlerContext from "./lib/handler-context";
+import run from "./lib/runner.js";
 import { getRedisClient } from "./lib/redis.js";
 import { LearnWeb3Client, Network } from "./lib/learn-web3.js";
 import { CLAIM_EVERY, FIVE_MINUTES } from "./lib/constants.js";
@@ -46,7 +46,6 @@ run(async (context: HandlerContext) => {
       id: n.networkId,
       balance: n.balance,
     }));
-    console.log(supportedNetworks);
   }
   supportedNetworks = supportedNetworks.filter(
     (n) =>

@@ -1,6 +1,6 @@
 import { Client } from "@xmtp/xmtp-js";
 import { Wallet } from "ethers";
-import { getRedisClient } from "./lib/redis.js";
+import { getRedisClient } from "./redis.js";
 import { GrpcApiClient } from "@xmtp/grpc-api-client";
 
 export default async function createClient(): Promise<Client> {
