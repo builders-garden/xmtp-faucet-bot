@@ -114,7 +114,7 @@ run(async (context: HandlerContext) => {
 
     await context.reply("Here's your transaction receipt:");
     await context.reply(
-      `${FRAME_BASE_URL}?networkLogo=${
+      `${FRAME_BASE_URL}?txLink=${result.value}&networkLogo=${
         network?.networkLogo
       }&networkName=${network?.networkName.replace(" ", "-")}&tokenName=${
         network?.tokenName
