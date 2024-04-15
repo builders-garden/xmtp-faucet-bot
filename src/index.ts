@@ -21,11 +21,14 @@ run(async (context: HandlerContext) => {
 
   const redisClient = await getRedisClient();
   // clear cache await redisClient.del("supported-networks");
+  
+  
   const cachedSupportedNetworksData = await redisClient.get(
     "supported-networks"
   );
 
-  let supportedNetworks: { id: string; balance: string; dripAmount: string }[];
+  let supportedNetworks: Network[];
+
   const learnWeb3Client = new LearnWeb3Client();
   if (
     !cachedSupportedNetworksData ||
@@ -40,28 +43,22 @@ run(async (context: HandlerContext) => {
         supportedNetworks: updatedSupportedNetworksData,
       })
     );
-    supportedNetworks = updatedSupportedNetworksData.map((n: Network) => ({
-      id: n.networkId,
-      balance: n.balance,
-      dripAmount: n.dripAmount.toString(),
-    }));
+    supportedNetworks = updatedSupportedNetworksData;
   } else {
     supportedNetworks = JSON.parse(
       cachedSupportedNetworksData!
-    ).supportedNetworks?.map((n: Network) => ({
-      id: n.networkId,
-      balance: n.balance,
-      dripAmount: n.dripAmount,
-    }));
+    ).supportedNetworks;
   }
+  // get the current step we're in
+  const step = inMemoryCache.get(senderAddress);
+  
+  
   supportedNetworks = supportedNetworks.filter(
     (n) =>
       !n.id.toLowerCase().includes("starknet") &&
       !n.id.toLowerCase().includes("fuel") &&
       !n.id.toLowerCase().includes("mode")
   );
-  // get the current step we're in
-  const step = inMemoryCache.get(senderAddress);
 
   if (!step) {
     // send the first message
@@ -73,6 +70,7 @@ run(async (context: HandlerContext) => {
     const channelsWithoutBalance = supportedNetworks
       .filter((n) => parseFloat(n.balance) <= parseFloat(n.dripAmount))
       .map((n) => `- ${n.id}`);
+
 
     if (content.toLowerCase() === "balances") {
       //Only for admin purposes
@@ -96,8 +94,10 @@ run(async (context: HandlerContext) => {
 
     inMemoryCache.set(senderAddress, 1);
   } else if (step === 1) {
+
     const inputNetwork = content.trim().toLowerCase().replaceAll(" ", "_");
     if (!supportedNetworks.map((n) => n.id).includes(inputNetwork)) {
+
       await context.reply(
         `❌ I'm sorry, but I don't support ${content} at the moment. Can I assist you with a different testnet?`
       );
@@ -122,19 +122,28 @@ run(async (context: HandlerContext) => {
     await context.reply(
       "Your testnet tokens are being processed. Please wait a moment for the transaction to process."
     );
+    const network = supportedNetworks.find((n) => n.networkId === inputNetwork);
     const result = await learnWeb3Client.dripTokens(
       inputNetwork,
       senderAddress
     );
+
     if (!result.ok) {
       await context.reply(
         `❌ Sorry, there was an error processing your request:\n\n"${result.error!}"`
       );
       return;
     }
+
     await context.reply("Here's your transaction receipt:");
     await context.reply(
-      `${process.env.FRAME_BASE_URL}?networkId=${inputNetwork}&txLink=${result.value}`
+
+      `${FRAME_BASE_URL}?txLink=${result.value}&networkLogo=${
+        network?.networkLogo
+      }&networkName=${network?.networkName.replace(" ", "-")}&tokenName=${
+        network?.tokenName
+      }&amount=${network?.dripAmount}`
+
     );
     inMemoryCache.set(senderAddress, 0);
   }
