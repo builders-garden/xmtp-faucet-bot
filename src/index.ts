@@ -1,34 +1,34 @@
 import "dotenv/config";
-import { privateKeyToAccount } from "viem/accounts";
-import HandlerContext from "./handler-context";
-import run from "./runner.js";
+import HandlerContext from "./lib/handler-context";
+import run from "./lib/runner.js";
 import { getRedisClient } from "./lib/redis.js";
-import { LearnWeb3Client, Network } from "./lib/learn-web3.js";
-import { CLAIM_EVERY, FIVE_MINUTES, FRAME_BASE_URL } from "./lib/constants.js";
+import { LearnWeb3Client, Network } from "./learn-web3.js";
+import { FIVE_MINUTES } from "./constants.js";
 
 const inMemoryCache = new Map<string, number>();
 
 run(async (context: HandlerContext) => {
   const { message } = context;
-  const wallet = privateKeyToAccount(process.env.KEY as `0x${string}`);
-
   const { content, senderAddress } = message;
 
-  if (senderAddress?.toLowerCase() === wallet.address?.toLowerCase()) {
-    // safely ignore this message
-    return;
-  }
-
-  if (content === "reset") {
+  if (
+    content.toLowerCase() === "list" ||
+    content.toLowerCase() === "balances" ||
+    content.toLowerCase() === "stop"
+  ) {
     inMemoryCache.set(senderAddress, 0);
   }
 
   const redisClient = await getRedisClient();
-
+  // clear cache await redisClient.del("supported-networks");
+  
+  
   const cachedSupportedNetworksData = await redisClient.get(
     "supported-networks"
   );
+
   let supportedNetworks: Network[];
+
   const learnWeb3Client = new LearnWeb3Client();
   if (
     !cachedSupportedNetworksData ||
@@ -49,32 +49,55 @@ run(async (context: HandlerContext) => {
       cachedSupportedNetworksData!
     ).supportedNetworks;
   }
-
   // get the current step we're in
   const step = inMemoryCache.get(senderAddress);
+  
+  
+  supportedNetworks = supportedNetworks.filter(
+    (n) =>
+      !n.id.toLowerCase().includes("starknet") &&
+      !n.id.toLowerCase().includes("fuel") &&
+      !n.id.toLowerCase().includes("mode")
+  );
 
   if (!step) {
     // send the first message
     await context.reply("Hey! I can assist you in obtaining testnet tokens.");
-
+    if (process.env.DEBUG === "true") console.log(supportedNetworks);
     const channelsWithBalance = supportedNetworks
-      .filter((n) => parseFloat(n.balance) > 0)
-      .map((n) => `- ${n.networkId}`);
+      .filter((n) => parseFloat(n.balance) > parseFloat(n.dripAmount))
+      .map((n) => `- ${n.id}`);
     const channelsWithoutBalance = supportedNetworks
-      .filter((n) => parseFloat(n.balance) === 0)
-      .map((n) => `- ${n.networkId}`);
+      .filter((n) => parseFloat(n.balance) <= parseFloat(n.dripAmount))
+      .map((n) => `- ${n.id}`);
 
-    // send the second message
-    await context.reply(
-      `Here the options you can choose from (make sure to copy and paste the name exactly!):\n\n✅With Balance:\n${channelsWithBalance.join(
-        "\n"
-      )}\n\n❌Without Balance:\n${channelsWithoutBalance.join("\n")}`
-    );
+
+    if (content.toLowerCase() === "balances") {
+      //Only for admin purposes
+      const networkList = supportedNetworks.map((n) => {
+        return `- ${n.id}: ${n.balance}`;
+      });
+
+      await context.reply(
+        `Here are the networks you can choose from:\n\n${networkList.join(
+          "\n"
+        )}\n\nSend "list" at any time to show the list again.`
+      );
+    } else {
+      //Else display list
+      await context.reply(
+        `Here the options you can choose from (make sure to type them exactly!):\n\nSend "list" at any time to show the list again.\n\n✅With Balance:\n${channelsWithBalance.join(
+          "\n"
+        )}\n\n❌Without Balance:\n${channelsWithoutBalance.join("\n")}`
+      );
+    }
 
     inMemoryCache.set(senderAddress, 1);
   } else if (step === 1) {
-    const inputNetwork = content.trim().toLowerCase().replace(" ", "_");
-    if (!supportedNetworks.map((n) => n.networkId).includes(inputNetwork)) {
+
+    const inputNetwork = content.trim().toLowerCase().replaceAll(" ", "_");
+    if (!supportedNetworks.map((n) => n.id).includes(inputNetwork)) {
+
       await context.reply(
         `❌ I'm sorry, but I don't support ${content} at the moment. Can I assist you with a different testnet?`
       );
@@ -114,11 +137,13 @@ run(async (context: HandlerContext) => {
 
     await context.reply("Here's your transaction receipt:");
     await context.reply(
+
       `${FRAME_BASE_URL}?txLink=${result.value}&networkLogo=${
         network?.networkLogo
       }&networkName=${network?.networkName.replace(" ", "-")}&tokenName=${
         network?.tokenName
       }&amount=${network?.dripAmount}`
+
     );
     inMemoryCache.set(senderAddress, 0);
   }

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const EVM_TOKENS = ["ETH", "MATIC", "USDC"];
+const EVM_TOKENS = ["ETH", "MATIC", "USDC", "CELO"];
 
 export interface Network {
   networkId: string;
