@@ -11,16 +11,21 @@ run(async (context: HandlerContext) => {
   const { message } = context;
   const { content, senderAddress } = message;
 
-  if (content.toLowerCase() === "list") {
+  if (
+    content.toLowerCase() === "list" ||
+    content.toLowerCase() === "balances" ||
+    content.toLowerCase() === "stop"
+  ) {
     inMemoryCache.set(senderAddress, 0);
   }
 
   const redisClient = await getRedisClient();
-
+  // clear cache await redisClient.del("supported-networks");
   const cachedSupportedNetworksData = await redisClient.get(
     "supported-networks"
   );
-  let supportedNetworks: { id: string; balance: string }[];
+
+  let supportedNetworks: { id: string; balance: string; dripAmount: string }[];
   const learnWeb3Client = new LearnWeb3Client();
   if (
     !cachedSupportedNetworksData ||
@@ -38,6 +43,7 @@ run(async (context: HandlerContext) => {
     supportedNetworks = updatedSupportedNetworksData.map((n: Network) => ({
       id: n.networkId,
       balance: n.balance,
+      dripAmount: n.dripAmount.toString(),
     }));
   } else {
     supportedNetworks = JSON.parse(
@@ -45,6 +51,7 @@ run(async (context: HandlerContext) => {
     ).supportedNetworks?.map((n: Network) => ({
       id: n.networkId,
       balance: n.balance,
+      dripAmount: n.dripAmount,
     }));
   }
   supportedNetworks = supportedNetworks.filter(
@@ -59,20 +66,33 @@ run(async (context: HandlerContext) => {
   if (!step) {
     // send the first message
     await context.reply("Hey! I can assist you in obtaining testnet tokens.");
-
+    console.log(supportedNetworks);
     const channelsWithBalance = supportedNetworks
-      .filter((n) => parseFloat(n.balance) > 0)
+      .filter((n) => parseFloat(n.balance) > parseFloat(n.dripAmount))
       .map((n) => `- ${n.id}`);
     const channelsWithoutBalance = supportedNetworks
-      .filter((n) => parseFloat(n.balance) === 0)
+      .filter((n) => parseFloat(n.balance) <= parseFloat(n.dripAmount))
       .map((n) => `- ${n.id}`);
 
-    // send the second message
-    await context.reply(
-      `Here the options you can choose from (make sure to type them exactly!):\n\nSend "list" at any time to show the list again.\n\n✅With Balance:\n${channelsWithBalance.join(
-        "\n"
-      )}\n\n❌Without Balance:\n${channelsWithoutBalance.join("\n")}`
-    );
+    if (content.toLowerCase() === "balances") {
+      //Only for admin purposes
+      const networkList = supportedNetworks.map((n) => {
+        return `- ${n.id}: ${n.balance}`;
+      });
+
+      await context.reply(
+        `Here are the networks you can choose from:\n\n${networkList.join(
+          "\n"
+        )}\n\nSend "list" at any time to show the list again.`
+      );
+    } else {
+      //Else display list
+      await context.reply(
+        `Here the options you can choose from (make sure to type them exactly!):\n\nSend "list" at any time to show the list again.\n\n✅With Balance:\n${channelsWithBalance.join(
+          "\n"
+        )}\n\n❌Without Balance:\n${channelsWithoutBalance.join("\n")}`
+      );
+    }
 
     inMemoryCache.set(senderAddress, 1);
   } else if (step === 1) {
