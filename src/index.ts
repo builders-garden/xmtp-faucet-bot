@@ -66,7 +66,7 @@ run(async (context: HandlerContext) => {
   if (!step) {
     // send the first message
     await context.reply("Hey! I can assist you in obtaining testnet tokens.");
-    if (process.env.DEBUG) console.log(supportedNetworks);
+    if (process.env.DEBUG === "true") console.log(supportedNetworks);
     const channelsWithBalance = supportedNetworks
       .filter((n) => parseFloat(n.balance) > parseFloat(n.dripAmount))
       .map((n) => `- ${n.id}`);
