@@ -21,8 +21,7 @@ run(async (context: HandlerContext) => {
 
   const redisClient = await getRedisClient();
   // clear cache await redisClient.del("supported-networks");
-  
-  
+
   const cachedSupportedNetworksData = await redisClient.get(
     "supported-networks"
   );
@@ -51,13 +50,12 @@ run(async (context: HandlerContext) => {
   }
   // get the current step we're in
   const step = inMemoryCache.get(senderAddress);
-  
-  
+
   supportedNetworks = supportedNetworks.filter(
     (n) =>
-      !n.id.toLowerCase().includes("starknet") &&
-      !n.id.toLowerCase().includes("fuel") &&
-      !n.id.toLowerCase().includes("mode")
+      !n.networkId.toLowerCase().includes("starknet") &&
+      !n.networkId.toLowerCase().includes("fuel") &&
+      !n.networkId.toLowerCase().includes("mode")
   );
 
   if (!step) {
@@ -65,17 +63,16 @@ run(async (context: HandlerContext) => {
     await context.reply("Hey! I can assist you in obtaining testnet tokens.");
     if (process.env.DEBUG === "true") console.log(supportedNetworks);
     const channelsWithBalance = supportedNetworks
-      .filter((n) => parseFloat(n.balance) > parseFloat(n.dripAmount))
-      .map((n) => `- ${n.id}`);
+      .filter((n) => parseFloat(n.balance) > n.dripAmount)
+      .map((n) => `- ${n.networkId}`);
     const channelsWithoutBalance = supportedNetworks
-      .filter((n) => parseFloat(n.balance) <= parseFloat(n.dripAmount))
-      .map((n) => `- ${n.id}`);
-
+      .filter((n) => parseFloat(n.balance) <= n.dripAmount)
+      .map((n) => `- ${n.networkId}`);
 
     if (content.toLowerCase() === "balances") {
       //Only for admin purposes
       const networkList = supportedNetworks.map((n) => {
-        return `- ${n.id}: ${n.balance}`;
+        return `- ${n.networkId}: ${n.balance}`;
       });
 
       await context.reply(
@@ -94,10 +91,8 @@ run(async (context: HandlerContext) => {
 
     inMemoryCache.set(senderAddress, 1);
   } else if (step === 1) {
-
     const inputNetwork = content.trim().toLowerCase().replaceAll(" ", "_");
-    if (!supportedNetworks.map((n) => n.id).includes(inputNetwork)) {
-
+    if (!supportedNetworks.map((n) => n.networkId).includes(inputNetwork)) {
       await context.reply(
         `❌ I'm sorry, but I don't support ${content} at the moment. Can I assist you with a different testnet?`
       );
@@ -137,13 +132,11 @@ run(async (context: HandlerContext) => {
 
     await context.reply("Here's your transaction receipt:");
     await context.reply(
-
-      `${FRAME_BASE_URL}?txLink=${result.value}&networkLogo=${
+      `${process.env.FRAME_BASE_URL}?txLink=${result.value}&networkLogo=${
         network?.networkLogo
       }&networkName=${network?.networkName.replace(" ", "-")}&tokenName=${
         network?.tokenName
       }&amount=${network?.dripAmount}`
-
     );
     inMemoryCache.set(senderAddress, 0);
   }
