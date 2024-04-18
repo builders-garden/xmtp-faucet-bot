@@ -4,23 +4,41 @@ import run from "./lib/runner.js";
 import { getRedisClient } from "./lib/redis.js";
 import { LearnWeb3Client, Network } from "./learn-web3.js";
 import { FIVE_MINUTES } from "./constants.js";
-
-const inMemoryCache = new Map<string, number>();
+const inMemoryCache = new Map<
+  string,
+  { step: number; lastInteraction: number }
+>();
 
 run(async (context: HandlerContext) => {
   const { message } = context;
+  const redisClient = await getRedisClient();
   const { content, senderAddress } = message;
 
-  if (
-    content.toLowerCase() === "list" ||
-    content.toLowerCase() === "balances" ||
-    content.toLowerCase() === "stop"
-  ) {
-    inMemoryCache.set(senderAddress, 0);
-  }
+  const oneHour = 3600000; // Milliseconds in one hour.
+  const now = Date.now(); // Current timestamp.
+  const cacheEntry = inMemoryCache.get(senderAddress); // Retrieve the current cache entry for the sender.
 
-  const redisClient = await getRedisClient();
-  // clear cache await redisClient.del("supported-networks");
+  let reset = false; // Flag to indicate if the interaction step has been reset.
+  const defaultStopWords = ["stop", "unsubscribe", "cancel", "list"];
+  if (defaultStopWords.some((word) => content.toLowerCase().includes(word))) {
+    // If its a stop word
+    reset = true;
+  }
+  if (!cacheEntry || now - cacheEntry.lastInteraction > oneHour) {
+    // If there's no cache entry or the last interaction was more than an hour ago, reset the step.
+    reset = true;
+  }
+  if (reset) {
+    inMemoryCache.delete(senderAddress);
+  }
+  // Update the cache entry with either reset step or existing step, and the current timestamp.
+  inMemoryCache.set(senderAddress, {
+    step: reset ? 0 : cacheEntry?.step ?? 0,
+    lastInteraction: now,
+  });
+
+  // Return the updated cache entry and the reset flag.
+  const step = inMemoryCache.get(senderAddress)!.step;
 
   const cachedSupportedNetworksData = await redisClient.get(
     "supported-networks"
@@ -48,8 +66,6 @@ run(async (context: HandlerContext) => {
       cachedSupportedNetworksData!
     ).supportedNetworks;
   }
-  // get the current step we're in
-  const step = inMemoryCache.get(senderAddress);
 
   supportedNetworks = supportedNetworks.filter(
     (n) =>
@@ -60,15 +76,37 @@ run(async (context: HandlerContext) => {
 
   if (!step) {
     // send the first message
-    await context.reply("Hey! I can assist you in obtaining testnet tokens.");
+    await context.reply(
+      "Hey! I can assist you in obtaining testnet tokens.\n\n Type the network number you would like to drip tokens from."
+    );
     if (process.env.DEBUG === "true") console.log(supportedNetworks);
-    const channelsWithBalance = supportedNetworks
-      .filter((n) => parseFloat(n.balance) > n.dripAmount)
-      .map((n) => `- ${n.networkId}`);
-    const channelsWithoutBalance = supportedNetworks
-      .filter((n) => parseFloat(n.balance) <= n.dripAmount)
-      .map((n) => `- ${n.networkId}`);
+    // Combine and map all networks with their indices
+    const combinedNetworks = supportedNetworks.map((n, index) => ({
+      index: index + 1,
+      networkId: n.networkId
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase()),
+      balance: n.balance,
+      dripAmount: n.dripAmount,
+    }));
 
+    const channelsWithBalance = combinedNetworks
+      .filter((n) => parseFloat(n.balance) > n.dripAmount)
+      .map((n) => `${n.index}. ${n.networkId}`);
+
+    const channelsWithoutBalance = combinedNetworks
+      .filter((n) => parseFloat(n.balance) <= n.dripAmount)
+      .map((n) => `${n.index}. ${n.networkId}`);
+
+    //Else display list
+    await context.reply(
+      `Send "list" at any time to show the list again.\n\n✅With Balance:\n${channelsWithBalance.join(
+        "\n"
+      )}\n\n❌Without Balance:\n${channelsWithoutBalance.join("\n")}`
+    );
+
+    inMemoryCache.set(senderAddress, { step: 1, lastInteraction: Date.now() });
+  } else if (step === 1) {
     if (content.toLowerCase() === "balances") {
       //Only for admin purposes
       const networkList = supportedNetworks.map((n) => {
@@ -80,46 +118,21 @@ run(async (context: HandlerContext) => {
           "\n"
         )}\n\nSend "list" at any time to show the list again.`
       );
-    } else {
-      //Else display list
-      await context.reply(
-        `Here the options you can choose from (make sure to type them exactly!):\n\nSend "list" at any time to show the list again.\n\n✅With Balance:\n${channelsWithBalance.join(
-          "\n"
-        )}\n\n❌Without Balance:\n${channelsWithoutBalance.join("\n")}`
-      );
     }
 
-    inMemoryCache.set(senderAddress, 1);
-  } else if (step === 1) {
-    const inputNetwork = content.trim().toLowerCase().replaceAll(" ", "_");
-    if (!supportedNetworks.map((n) => n.networkId).includes(inputNetwork)) {
-      await context.reply(
-        `❌ I'm sorry, but I don't support ${content} at the moment. Can I assist you with a different testnet?`
-      );
+    const selectedNetworkIndex = parseInt(content) - 1;
+    const selectedNetwork = supportedNetworks[selectedNetworkIndex];
+
+    if (!selectedNetwork) {
+      await context.reply("Invalid option. Please select a valid option.");
       return;
     }
-
-    /* UNCOMMENT TO ADD A CUSTOM COOLDOWN TIME PER USER, LEARN WEB3 HAS 24HRS DEFAULT
-    const lastClaimedAt = await redisClient.get(
-      `last-claimed-at-${senderAddress}`
-    );
-    // check if the user has claimed in the last X hours
-    if (Number(lastClaimedAt) > Date.now() - CLAIM_EVERY) {
-      await context.reply(
-        "Sorry, your only allowed once every 24 hours. Try again later!"
-      );
-      return;
-    }
-
-    // store the user's preference
-    await redisClient.set(`last-claimed-at-${senderAddress}`, Date.now());*/
-
     await context.reply(
       "Your testnet tokens are being processed. Please wait a moment for the transaction to process."
     );
-    const network = supportedNetworks.find((n) => n.networkId === inputNetwork);
+    const network = selectedNetwork;
     const result = await learnWeb3Client.dripTokens(
-      inputNetwork,
+      selectedNetwork.networkId,
       senderAddress
     );
 
@@ -134,10 +147,10 @@ run(async (context: HandlerContext) => {
     await context.reply(
       `${process.env.FRAME_BASE_URL}?txLink=${result.value}&networkLogo=${
         network?.networkLogo
-      }&networkName=${network?.networkName.replace(" ", "-")}&tokenName=${
+      }&networkName=${network?.networkName.replaceAll(" ", "-")}&tokenName=${
         network?.tokenName
       }&amount=${network?.dripAmount}`
     );
-    inMemoryCache.set(senderAddress, 0);
+    inMemoryCache.set(senderAddress, { step: 0, lastInteraction: Date.now() });
   }
 });
