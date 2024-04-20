@@ -4,6 +4,10 @@ import run from "./lib/runner.js";
 import { getRedisClient } from "./lib/redis.js";
 import { LearnWeb3Client, Network } from "./learn-web3.js";
 import { FIVE_MINUTES } from "./constants.js";
+import Mixpanel from "mixpanel";
+
+const mixpanel = Mixpanel.init(process.env.MIX_PANEL as string);
+
 const inMemoryCache = new Map<
   string,
   { step: number; lastInteraction: number }
@@ -14,6 +18,11 @@ run(async (context: HandlerContext) => {
   const redisClient = await getRedisClient();
   const { content, senderAddress } = message;
 
+  if (content == "heartbeat") {
+    mixpanel.track("Page Viewed", {
+      distinct_id: senderAddress,
+    });
+  }
   const oneHour = 3600000; // Milliseconds in one hour.
   const now = Date.now(); // Current timestamp.
   const cacheEntry = inMemoryCache.get(senderAddress); // Retrieve the current cache entry for the sender.
@@ -49,9 +58,11 @@ run(async (context: HandlerContext) => {
   const learnWeb3Client = new LearnWeb3Client();
   if (
     !cachedSupportedNetworksData ||
-    parseInt(JSON.parse(cachedSupportedNetworksData!)?.lastSyncedAt) >
-      Date.now() + FIVE_MINUTES
+    Date.now() >
+      parseInt(JSON.parse(cachedSupportedNetworksData).lastSyncedAt) +
+        FIVE_MINUTES
   ) {
+    console.log("Cleared cache");
     const updatedSupportedNetworksData = await learnWeb3Client.getNetworks();
     await redisClient.set(
       "supported-networks",
@@ -136,6 +147,10 @@ run(async (context: HandlerContext) => {
       senderAddress
     );
 
+    mixpanel.track("Faucet", {
+      distinct_id: senderAddress,
+      network: network.networkName,
+    });
     if (!result.ok) {
       await context.reply(
         `❌ Sorry, there was an error processing your request:\n\n"${result.error!}"`
