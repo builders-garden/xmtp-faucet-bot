@@ -5,6 +5,7 @@ import { getRedisClient } from "./lib/redis.js";
 import { LearnWeb3Client, Network } from "./learn-web3.js";
 import { FIVE_MINUTES } from "./constants.js";
 import Mixpanel from "mixpanel";
+
 const mixpanel = Mixpanel.init(process.env.MIX_PANEL as string);
 
 const inMemoryCache = new Map<
@@ -17,9 +18,11 @@ run(async (context: HandlerContext) => {
   const redisClient = await getRedisClient();
   const { content, senderAddress } = message;
 
-  mixpanel.track("Page Viewed", {
-    distinct_id: senderAddress,
-  });
+  if (content == "heartbeat") {
+    mixpanel.track("Page Viewed", {
+      distinct_id: senderAddress,
+    });
+  }
   const oneHour = 3600000; // Milliseconds in one hour.
   const now = Date.now(); // Current timestamp.
   const cacheEntry = inMemoryCache.get(senderAddress); // Retrieve the current cache entry for the sender.
