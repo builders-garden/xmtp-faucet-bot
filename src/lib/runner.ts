@@ -17,7 +17,7 @@ export default async function run(handler: Handler) {
     try {
       if (
         message.senderAddress == client.address ||
-        message.content == "heartbeat"
+        message.content.toLowerCase() == "heartbeat"
       )
         continue;
 
