@@ -142,6 +142,10 @@ run(async (context: HandlerContext) => {
       senderAddress
     );
 
+    mixpanel.track("Page Viewed", {
+      distinct_id: senderAddress,
+      network: network.networkName,
+    });
     if (!result.ok) {
       await context.reply(
         `❌ Sorry, there was an error processing your request:\n\n"${result.error!}"`
