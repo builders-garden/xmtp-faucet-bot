@@ -58,6 +58,7 @@ run(async (context: HandlerContext) => {
     parseInt(JSON.parse(cachedSupportedNetworksData!)?.lastSyncedAt) >
       Date.now() + FIVE_MINUTES
   ) {
+    console.log("Cleared cache");
     const updatedSupportedNetworksData = await learnWeb3Client.getNetworks();
     await redisClient.set(
       "supported-networks",
