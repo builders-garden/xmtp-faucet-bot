@@ -25,17 +25,16 @@ export const sendHeartbeat = async () => {
 };
 
 export const scheduleHeartbeat = () => {
-  console.log("Scheduling heartbeat.");
-  cron.schedule(
-    "*/5 * * * *",
-    () => {
-      sendHeartbeat();
-    },
-    {
-      runOnInit: false,
-    }
-  );
+  if (process.env.HEARTBEAT_BOT_KEY) {
+    console.log("Scheduling heartbeat.");
+    cron.schedule(
+      "*/5 * * * *",
+      () => {
+        sendHeartbeat();
+      },
+      {
+        runOnInit: false,
+      }
+    );
+  }
 };
-if (process.env.HEARTBEAT_BOT_KEY) {
-  scheduleHeartbeat();
-}
