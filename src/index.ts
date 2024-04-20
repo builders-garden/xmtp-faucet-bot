@@ -55,8 +55,9 @@ run(async (context: HandlerContext) => {
   const learnWeb3Client = new LearnWeb3Client();
   if (
     !cachedSupportedNetworksData ||
-    parseInt(JSON.parse(cachedSupportedNetworksData!)?.lastSyncedAt) >
-      Date.now() + FIVE_MINUTES
+    Date.now() >
+      parseInt(JSON.parse(cachedSupportedNetworksData).lastSyncedAt) +
+        FIVE_MINUTES
   ) {
     console.log("Cleared cache");
     const updatedSupportedNetworksData = await learnWeb3Client.getNetworks();
