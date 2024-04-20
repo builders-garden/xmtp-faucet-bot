@@ -142,7 +142,7 @@ run(async (context: HandlerContext) => {
       senderAddress
     );
 
-    mixpanel.track("Page Viewed", {
+    mixpanel.track("Faucet", {
       distinct_id: senderAddress,
       network: network.networkName,
     });
