@@ -18,11 +18,9 @@ run(async (context: HandlerContext) => {
   const redisClient = await getRedisClient();
   const { content, senderAddress } = message;
 
-  if (content == "heartbeat") {
-    mixpanel.track("Page Viewed", {
-      distinct_id: senderAddress,
-    });
-  }
+  mixpanel.track("Page Viewed", {
+    distinct_id: senderAddress,
+  });
   const oneHour = 3600000; // Milliseconds in one hour.
   const now = Date.now(); // Current timestamp.
   const cacheEntry = inMemoryCache.get(senderAddress); // Retrieve the current cache entry for the sender.
