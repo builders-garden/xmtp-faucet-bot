@@ -1,4 +1,4 @@
-# Faucuet Bot
+# Faucet Bot
 
 Go to [BotKit](https://github.com/xmtp/botkit) to learn more
 
