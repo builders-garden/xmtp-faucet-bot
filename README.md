@@ -25,7 +25,7 @@ XMTP_ENV= # XMTP environment (production or dev)
 LEARN_WEB3_API_KEY= # Your LearnWeb3 API key
 REDIS_CONNECTION_STRING= # Redis connection string for caching
 FRAME_BASE_URL= # Base URL for the frame application
-MIX_PANEL= # 034d959e29055215a083a6b7d8497b37
+MIX_PANEL= # mix panel key
 ```
 
 > ⚠️ Bot kit is not compatible with `bun` yet. Use `npm` or `yarn`
