@@ -47,6 +47,24 @@ yarn build:watch
 yarn start:echo
 ```
 
+## Messaging apps 💬
+
+Test the bots in messaging apps
+
+- [Converse](https://getconverse.app/): Own your conversations. Works with Frames (Transactions TBA)
+- [Coinbase Wallet](https://www.coinbase.com/wallet): Your key to the world of crypto. (Frame support TBA)
+- [dev-inbox](https://dev-dev-inbox.vercel.app/): Dev focused messaging client that renders Frames (Transactions TBA) (dev network)
+
+## Identities
+
+![](https://github.com/xmtp/awesome-xmtp/assets/1447073/9bb4f8c2-321e-4b6d-b52e-2105d69c4d47)
+
+Learn about the almost 2 million identities that are already part of XMTP by visiting the [Dune dashboard](https://dune.com/xmtp_team/dash).
+
+## Documentation 📚
+
+To learn more about XMTP, to go the [docs](https://docs.xmtp.org/).
+
 ---
 
 Powered by <a href="https://learnweb3.io/faucets">Learnweb3</a>
