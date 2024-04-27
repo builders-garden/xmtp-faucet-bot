@@ -2,6 +2,8 @@
 
 Go to [BotKit](https://github.com/xmtp/botkit) to learn more
 
+- Uses [Mint Frame](https://github.com/fabriguespe/mint-frame/)
+
 ## Development
 
 To kickstart the tutorial, you'll need to clone the repository containing the bot code. Follow these steps:
@@ -21,6 +23,7 @@ XMTP_ENV= # XMTP environment (production or dev)
 LEARN_WEB3_API_KEY= # Your LearnWeb3 API key
 REDIS_CONNECTION_STRING= # Redis connection string for caching
 FRAME_BASE_URL= # Base URL for the frame application
+MIX_PANEL= # 034d959e29055215a083a6b7d8497b37
 ```
 
 > ⚠️ Bot kit is not compatible with `bun` yet. Use `npm` or `yarn`
