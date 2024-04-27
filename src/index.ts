@@ -1,9 +1,8 @@
 import "dotenv/config";
-import HandlerContext from "./lib/handler-context";
-import run from "./lib/runner.js";
+import { run, HandlerContext } from "@xmtp/botkit";
 import { getRedisClient } from "./lib/redis.js";
-import { LearnWeb3Client, Network } from "./learn-web3.js";
-import { FIVE_MINUTES } from "./constants.js";
+import { LearnWeb3Client, Network } from "./lib/learn-web3.js";
+import { FIVE_MINUTES } from "./lib/constants.js";
 import Mixpanel from "mixpanel";
 
 const mixpanel = Mixpanel.init(process.env.MIX_PANEL as string);

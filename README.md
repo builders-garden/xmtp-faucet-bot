@@ -1,56 +1,47 @@
-# XMTP Faucet Bot
+# Faucuet Bot
 
-![](https://github.com/xmtp/awesome-xmtp/assets/1447073/9bb4f8c2-321e-4b6d-b52e-2105d69c4d47)
+Go to [BotKit](https://github.com/xmtp/botkit) to learn more
 
-This is a PoC for an XMTP bot sending Faucet testnet funds through XMTP. Powered by [Learnweb3](https://learnweb3.io/faucets/)
+## Development
 
-## How does it work
-
-3. **List display**: Send "list" for seeing the full list
-
-4. **Network Checks**: Validates supported networks and their balances through the Learnweb3API
-
-5. **Rate limit**: Every testnet is liited to once per day per address.
-
-## Getting started
-
-> ⚠️ Ensure you're using `Yarn 4` for dependency management. Check with `yarn --version`.
-
-To install dependencies:
+To kickstart the tutorial, you'll need to clone the repository containing the bot code. Follow these steps:
 
 ```bash
-yarn
-```
-
-To run:
-
-```bash
-yarn build
-yarn start
-```
-
-To run with hot-reload:
-
-```bash
-yarn build:watch
-yarn start:watch
-```
-
-### Environment
-
-```bash
+git clone https://github.com/fabriguespe/faucet-bot.git
+cd faucet-bot
+# copy env variables template
 cp .env.example .env
 ```
 
-then populate the environment variables accordingly
+**Set the variables**
 
 ```bash
-LEARN_WEB3_API_KEY= # Your LearnWeb3 API key
 KEY= # The private key for the bot
-XMTP_ENV= # XMTP environment (production or development)
-REDIS_CONNECTION_STRING= # Redis connection string for caching and other operations
+XMTP_ENV= # XMTP environment (production or dev)
+LEARN_WEB3_API_KEY= # Your LearnWeb3 API key
+REDIS_CONNECTION_STRING= # Redis connection string for caching
 FRAME_BASE_URL= # Base URL for the frame application
-PUBLIC_BOT_ADDRESS= # Public address of the bot
-HEARTBEAT_BOT_KEY= # Private key for the heartbeat functionality of the bot
-DEBUG= # Enable or disable debug mode (true or false)
 ```
+
+> ⚠️ Bot kit is not compatible with `bun` yet. Use `npm` or `yarn`
+
+```bash
+# install dependencies
+yarn install
+
+# running the bot
+yarn build
+yarn start
+
+# to run with hot-reload
+yarn build:watch
+yarn start:watch
+
+# run the echo example
+yarn build:watch
+yarn start:echo
+```
+
+---
+
+Powered by <a href="https://learnweb3.io/faucets">Learnweb3</a>
