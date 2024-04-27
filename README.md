@@ -1,8 +1,10 @@
 # Faucet Bot
 
+> 💬 **Try it:** Message `faucetbot.eth`
+
 Go to [BotKit](https://github.com/xmtp/botkit) to learn more
 
-- Uses [Mint Frame](https://github.com/fabriguespe/mint-frame/)
+This bot uses [Mint Frame](https://github.com/fabriguespe/mint-frame/)
 
 ## Development
 
