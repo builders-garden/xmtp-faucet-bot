@@ -17,7 +17,7 @@ run(async (context: HandlerContext) => {
   const redisClient = await getRedisClient();
   const { content, senderAddress } = message;
 
-  mixpanel.track("Page Viewed", {
+  mixpanel.track("Faucet-Visit", {
     distinct_id: senderAddress,
   });
   const oneHour = 3600000; // Milliseconds in one hour.
@@ -144,7 +144,7 @@ run(async (context: HandlerContext) => {
       senderAddress
     );
 
-    mixpanel.track("Faucet", {
+    mixpanel.track("Faucet-Request", {
       distinct_id: senderAddress,
       network: network.networkName,
     });
