@@ -11,7 +11,6 @@
     "predev": "yarn generate"
   },
   "devDependencies": {
-    "@types/node-cron": "^3",
     "nodemon": "^3.1.0",
     "typescript": "^5.4.3"
   },
@@ -19,7 +18,6 @@
     "@redis/client": "^1.5.14",
     "@xmtp/botkit": "^1.0.8",
     "axios": "^1.6.8",
-    "mixpanel": "^0.18.0",
-    "node-cron": "^3.0.3"
+    "mixpanel": "^0.18.0"
   }
 }
